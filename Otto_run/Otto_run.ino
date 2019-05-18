@@ -49,16 +49,12 @@ void setup() {
   otto.home();
   delay(50);
   otto.sing(S_happy); // a happy Otto :)
-
-  pinMode(LED_BUILTIN, OUTPUT);
-  flashWithDelay(5);
 }
 
 ///////////////////////////////////////////////////////////////////
 //-- Principal Loop ---------------------------------------------//
 ///////////////////////////////////////////////////////////////////
 void loop() {
-  flashWithDelay(2);
   otto.walk(2,500,1); //change T for lower value to run faster!
   delay(50);
 }
