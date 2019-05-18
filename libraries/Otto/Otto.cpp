@@ -1,16 +1,9 @@
-
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-  #include <pins_arduino.h>
-#endif
-
+#include <Arduino.h>
+#include <EEPROM.h>
 
 #include "Otto.h"
 #include <Oscillator.h>
 #include <US.h>
-
 
 
 void Otto::init(int YL, int YR, int RL, int RR, bool load_calibration, int NoiseSensor, int Buzzer, int USTrigger, int USEcho) {

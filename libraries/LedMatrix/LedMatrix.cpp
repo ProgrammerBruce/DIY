@@ -6,13 +6,10 @@
 *         José Alberca Pita-Romero (Mouth's definitions)
 ******************************************************************************/
 
+#include <Arduino.h>
+
 #include "LedMatrix.h"
 
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-#endif
 
 LedMatrix::LedMatrix(char ser_pin, char clk_pin, char rck_pin) {
 	memory = 0x00000000;

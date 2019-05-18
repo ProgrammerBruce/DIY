@@ -5,14 +5,10 @@
 //-- (c) Juan Gonzalez-Gomez (Obijuan), Dec 2011
 //-- GPL license
 //--------------------------------------------------------------
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-  #include <pins_arduino.h>
-#endif
+
+#include <Arduino.h>
 #include "Oscillator.h"
-#include <Servo.h>
+
 
 //-- This function returns true if another sample
 //-- should be taken (i.e. the TS time has passed since

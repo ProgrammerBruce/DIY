@@ -9,22 +9,12 @@
 #ifndef __LEDMATRIX_H__
 #define __LEDMATRIX_H__
 
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-  #include "pins_arduino.h"
-#endif
-
 ////////////////////////////
 // Definitions            //
 ////////////////////////////
 #define ROWS 5
 #define COLUMNS 6
 #define MATRIX_LENGTH ROWS*COLUMNS
-
-
-
 
 
 class LedMatrix
@@ -66,7 +56,6 @@ public:
 	void setEntireMatrix(void);
 
 
-
 private:	
 	////////////////////////////
 	// Enumerations           //
@@ -86,7 +75,6 @@ private:
 	// Functions              //
 	////////////////////////////
 	void sendMemory(void);
-	
 	
 };
 

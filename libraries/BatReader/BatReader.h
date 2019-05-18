@@ -8,13 +8,6 @@
 #ifndef __BATREADER_H__
 #define __BATREADER_H__
 
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-  #include "pins_arduino.h"
-#endif
-
 ////////////////////////////
 // Definitions            //
 ////////////////////////////

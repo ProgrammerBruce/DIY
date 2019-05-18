@@ -1,4 +1,6 @@
+#include <Arduino.h>
 #include "US.h"
+
 
 //****** US ******//
 US::US(){

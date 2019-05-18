@@ -6,13 +6,10 @@
 *
 ******************************************************************************/
 
+#include <Arduino.h>
+
 #include "BatReader.h"
 
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-#endif
 
 BatReader::BatReader() {
 }
@@ -28,4 +25,3 @@ double BatReader::readBatPercent(void) {
 	if(value < 0) return 0;
 	else return value;
 }
-
