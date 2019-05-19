@@ -1,29 +1,21 @@
 #include <Arduino.h>
-#include <EEPROM.h>
 
 #include "Otto.h"
 #include <Oscillator.h>
 #include <US.h>
 
 
-void Otto::init(int YL, int YR, int RL, int RR, bool load_calibration, int NoiseSensor, int Buzzer, int USTrigger, int USEcho) {
-  
+void Otto::init(int YL, int YR, int RL, int RR, int YL_trim, int YR_trim, int RL_trim, int RR_trim, int NoiseSensor, int Buzzer, int USTrigger, int USEcho)
+{
   servo_pins[0] = YL;
   servo_pins[1] = YR;
   servo_pins[2] = RL;
   servo_pins[3] = RR;
 
+  setTrims(YL_trim, YR_trim, RL_trim, RR_trim);
   attachServos();
   isOttoResting=false;
 
-  if (load_calibration) {
-    for (int i = 0; i < 4; i++) {
-      int servo_trim = EEPROM.read(i);
-      if (servo_trim > 128) servo_trim -= 256;
-      servo[i].SetTrim(servo_trim);
-    }
-  }
-  
   for (int i = 0; i < 4; i++) servo_position[i] = 90;
 
   //US sensor init with the pins:
@@ -37,71 +29,70 @@ void Otto::init(int YL, int YR, int RL, int RR, bool load_calibration, int Noise
   pinMode(NoiseSensor,INPUT);
 }
 
+
 ///////////////////////////////////////////////////////////////////
 //-- ATTACH & DETACH FUNCTIONS ----------------------------------//
 ///////////////////////////////////////////////////////////////////
-void Otto::attachServos(){
-    servo[0].attach(servo_pins[0]);
-    servo[1].attach(servo_pins[1]);
-    servo[2].attach(servo_pins[2]);
-    servo[3].attach(servo_pins[3]);
+void Otto::attachServos()
+{
+  servo[0].attach(servo_pins[0]);
+  servo[1].attach(servo_pins[1]);
+  servo[2].attach(servo_pins[2]);
+  servo[3].attach(servo_pins[3]);
 }
 
-void Otto::detachServos(){
-    servo[0].detach();
-    servo[1].detach();
-    servo[2].detach();
-    servo[3].detach();
+void Otto::detachServos()
+{
+  servo[0].detach();
+  servo[1].detach();
+  servo[2].detach();
+  servo[3].detach();
 }
 
 ///////////////////////////////////////////////////////////////////
 //-- OSCILLATORS TRIMS ------------------------------------------//
 ///////////////////////////////////////////////////////////////////
-void Otto::setTrims(int YL, int YR, int RL, int RR) {
-  servo[0].SetTrim(YL);
-  servo[1].SetTrim(YR);
-  servo[2].SetTrim(RL);
-  servo[3].SetTrim(RR);
-}
-
-void Otto::saveTrimsOnEEPROM() {
-  
-  for (int i = 0; i < 4; i++){ 
-      EEPROM.write(i, servo[i].getTrim());
-  } 
-      
+void Otto::setTrims(int YL_trim, int YR_trim, int RL_trim, int RR_trim)
+{
+  servo[0].SetTrim(YL_trim);
+  servo[1].SetTrim(YR_trim);
+  servo[2].SetTrim(RL_trim);
+  servo[3].SetTrim(RR_trim);
 }
 
 
 ///////////////////////////////////////////////////////////////////
 //-- BASIC MOTION FUNCTIONS -------------------------------------//
 ///////////////////////////////////////////////////////////////////
-void Otto::_moveServos(int time, int  servo_target[]) {
-
+void Otto::_moveServos(int time, int  servo_target[])
+{
   attachServos();
-  if(getRestState()==true){
-        setRestState(false);
+  if(getRestState()==true)
+  {
+    setRestState(false);
   }
 
-  if(time>10){
+  if(time>10)
+  {
     for (int i = 0; i < 4; i++) increment[i] = ((servo_target[i]) - servo_position[i]) / (time / 10.0);
     final_time =  millis() + time;
 
-    for (int iteration = 1; millis() < final_time; iteration++) {
+    for (int iteration = 1; millis() < final_time; iteration++)
+    {
       partial_time = millis() + 10;
       for (int i = 0; i < 4; i++) servo[i].SetPosition(servo_position[i] + (iteration * increment[i]));
       while (millis() < partial_time); //pause
     }
   }
-  else{
+  else
+  {
     for (int i = 0; i < 4; i++) servo[i].SetPosition(servo_target[i]);
   }
   for (int i = 0; i < 4; i++) servo_position[i] = servo_target[i];
 }
 
-
-void Otto::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], float cycle=1){
-
+void Otto::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], float cycle=1)
+{
   for (int i=0; i<4; i++) {
     servo[i].SetO(O[i]);
     servo[i].SetA(A[i]);
@@ -109,21 +100,22 @@ void Otto::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], floa
     servo[i].SetPh(phase_diff[i]);
   }
   double ref=millis();
-   for (double x=ref; x<=T*cycle+ref; x=millis()){
-     for (int i=0; i<4; i++){
-        servo[i].refresh();
-     }
+  for (double x=ref; x<=T*cycle+ref; x=millis())
+  {
+    for (int i=0; i<4; i++)
+    {
+      servo[i].refresh();
+    }
   }
 }
 
-
-void Otto::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0){
-
+void Otto::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0)
+{
   attachServos();
-  if(getRestState()==true){
-        setRestState(false);
+  if(getRestState()==true)
+  {
+    setRestState(false);
   }
-
 
   int cycles=(int)steps;    
 
@@ -137,12 +129,11 @@ void Otto::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps
 }
 
 
-
 ///////////////////////////////////////////////////////////////////
 //-- HOME = Otto at rest position -------------------------------//
 ///////////////////////////////////////////////////////////////////
-void Otto::home(){
-
+void Otto::home()
+{
   if(isOttoResting==false){ //Go to rest position only if necessary
 
     int homes[4]={90, 90, 90, 90}; //All the servos at rest position
@@ -153,13 +144,13 @@ void Otto::home(){
   }
 }
 
-bool Otto::getRestState(){
-
+bool Otto::getRestState()
+{
     return isOttoResting;
 }
 
-void Otto::setRestState(bool state){
-
+void Otto::setRestState(bool state)
+{
     isOttoResting = state;
 }
 
@@ -174,8 +165,8 @@ void Otto::setRestState(bool state){
 //--    steps: Number of steps
 //--    T: Period
 //---------------------------------------------------------
-void Otto::jump(float steps, int T){
-
+void Otto::jump(float steps, int T)
+{
   int up[]={90,90,150,30};
   _moveServos(T,up);
   int down[]={90,90,90,90};
@@ -190,8 +181,8 @@ void Otto::jump(float steps, int T){
 //--    * T : Period
 //--    * Dir: Direction: FORWARD / BACKWARD
 //---------------------------------------------------------
-void Otto::walk(float steps, int T, int dir){
-
+void Otto::walk(float steps, int T, int dir)
+{
   //-- Oscillator parameters for walking
   //-- Hip sevos are in phase
   //-- Feet servos are in phase
@@ -215,8 +206,8 @@ void Otto::walk(float steps, int T, int dir){
 //--   * T: Period
 //--   * Dir: Direction: LEFT / RIGHT
 //---------------------------------------------------------
-void Otto::turn(float steps, int T, int dir){
-
+void Otto::turn(float steps, int T, int dir)
+{
   //-- Same coordination than for walking (see Otto::walk)
   //-- The Amplitudes of the hip's oscillators are not igual
   //-- When the right hip servo amplitude is higher, the steps taken by
@@ -247,8 +238,8 @@ void Otto::turn(float steps, int T, int dir){
 //--    T: Period of one bend
 //--    dir: RIGHT=Right bend LEFT=Left bend
 //---------------------------------------------------------
-void Otto::bend (int steps, int T, int dir){
-
+void Otto::bend (int steps, int T, int dir)
+{
   //Parameters of all the movements. Default: Left bend
   int bend1[4]={90, 90, 62, 35}; 
   int bend2[4]={90, 90, 62, 105};
@@ -277,7 +268,6 @@ void Otto::bend (int steps, int T, int dir){
     delay(T*0.8);
     _moveServos(500,homes);
   }
-
 }
 
 
@@ -288,8 +278,8 @@ void Otto::bend (int steps, int T, int dir){
 //--    T: Period of one shake
 //--    dir: RIGHT=Right leg LEFT=Left leg
 //---------------------------------------------------------
-void Otto::shakeLeg (int steps,int T,int dir){
-
+void Otto::shakeLeg (int steps,int T,int dir)
+{
   //This variable change the amount of shakes
   int numberLegMoves=2;
 
@@ -318,15 +308,15 @@ void Otto::shakeLeg (int steps,int T,int dir){
 
   for (int j=0; j<steps;j++)
   {
-  //Bend movement
-  _moveServos(T2/2,shake_leg1);
-  _moveServos(T2/2,shake_leg2);
+    //Bend movement
+    _moveServos(T2/2,shake_leg1);
+    _moveServos(T2/2,shake_leg2);
   
     //Shake movement
     for (int i=0;i<numberLegMoves;i++)
     {
-    _moveServos(T/(2*numberLegMoves),shake_leg3);
-    _moveServos(T/(2*numberLegMoves),shake_leg2);
+      _moveServos(T/(2*numberLegMoves),shake_leg3);
+      _moveServos(T/(2*numberLegMoves),shake_leg2);
     }
     _moveServos(500,homes); //Return to home position
   }
@@ -343,8 +333,8 @@ void Otto::shakeLeg (int steps,int T,int dir){
 //--    * h: Jump height: SMALL / MEDIUM / BIG 
 //--              (or a number in degrees 0 - 90)
 //---------------------------------------------------------
-void Otto::updown(float steps, int T, int h){
-
+void Otto::updown(float steps, int T, int h)
+{
   //-- Both feet are 180 degrees out of phase
   //-- Feet amplitude and offset are the same
   //-- Initial phase for the right foot is -90, so that it starts
@@ -365,8 +355,8 @@ void Otto::updown(float steps, int T, int h){
 //--     T : Period
 //--     h : Amount of swing (from 0 to 50 aprox)
 //---------------------------------------------------------
-void Otto::swing(float steps, int T, int h){
-
+void Otto::swing(float steps, int T, int h)
+{
   //-- Both feets are in phase. The offset is half the amplitude
   //-- It causes the robot to swing from side to side
   int A[4]= {0, 0, h, h};
@@ -385,8 +375,8 @@ void Otto::swing(float steps, int T, int h){
 //--     T : Period
 //--     h : Amount of swing (from 0 to 50 aprox)
 //---------------------------------------------------------
-void Otto::tiptoeSwing(float steps, int T, int h){
-
+void Otto::tiptoeSwing(float steps, int T, int h)
+{
   //-- Both feets are in phase. The offset is not half the amplitude in order to tiptoe
   //-- It causes the robot to swing from side to side
   int A[4]= {0, 0, h, h};
@@ -405,8 +395,8 @@ void Otto::tiptoeSwing(float steps, int T, int h){
 //--    T: Period of one jitter 
 //--    h: height (Values between 5 - 25)   
 //---------------------------------------------------------
-void Otto::jitter(float steps, int T, int h){
-
+void Otto::jitter(float steps, int T, int h)
+{
   //-- Both feet are 180 degrees out of phase
   //-- Feet amplitude and offset are the same
   //-- Initial phase for the right foot is -90, so that it starts
@@ -429,8 +419,8 @@ void Otto::jitter(float steps, int T, int h){
 //--    T: Period of one bend
 //--    h: height (Values between 5 - 15) 
 //---------------------------------------------------------
-void Otto::ascendingTurn(float steps, int T, int h){
-
+void Otto::ascendingTurn(float steps, int T, int h)
+{
   //-- Both feet and legs are 180 degrees out of phase
   //-- Initial phase for the right foot is -90, so that it starts
   //--   in one extreme position (not in the middle)
@@ -453,8 +443,8 @@ void Otto::ascendingTurn(float steps, int T, int h){
 //--    h: Height. Typical valures between 15 and 40
 //--    dir: Direction: LEFT / RIGHT
 //---------------------------------------------------------
-void Otto::moonwalker(float steps, int T, int h, int dir){
-
+void Otto::moonwalker(float steps, int T, int h, int dir)
+{
   //-- This motion is similar to that of the caterpillar robots: A travelling
   //-- wave moving from one side to another
   //-- The two Otto's feet are equivalent to a minimal configuration. It is known
@@ -483,8 +473,8 @@ void Otto::moonwalker(float steps, int T, int h, int dir){
 //--     h: height (Values between 20 - 50)
 //--     dir:  Direction: LEFT / RIGHT
 //-----------------------------------------------------------
-void Otto::crusaito(float steps, int T, int h, int dir){
-
+void Otto::crusaito(float steps, int T, int h, int dir)
+{
   int A[4]= {25, 25, h, h};
   int O[4] = {0, 0, h/2+ 4, -h/2 - 4};
   double phase_diff[4] = {90, 90, DEG2RAD(0), DEG2RAD(-60 * dir)};
@@ -502,8 +492,8 @@ void Otto::crusaito(float steps, int T, int h, int dir){
 //--    h: height (Values between 10 - 30)
 //--    dir: direction: FOREWARD, BACKWARD
 //---------------------------------------------------------
-void Otto::flapping(float steps, int T, int h, int dir){
-
+void Otto::flapping(float steps, int T, int h, int dir)
+{
   int A[4]= {12, 12, h, h};
   int O[4] = {0, 0, h - 10, -h + 10};
   double phase_diff[4] = {DEG2RAD(0), DEG2RAD(180), DEG2RAD(-90 * dir), DEG2RAD(90 * dir)};
@@ -513,10 +503,6 @@ void Otto::flapping(float steps, int T, int h, int dir){
 }
 
 
-
-
-
-
 ///////////////////////////////////////////////////////////////////
 //-- SENSORS FUNCTIONS  -----------------------------------------//
 ///////////////////////////////////////////////////////////////////
@@ -524,8 +510,8 @@ void Otto::flapping(float steps, int T, int h, int dir){
 //---------------------------------------------------------
 //-- Otto getDistance: return Otto's ultrasonic sensor measure
 //---------------------------------------------------------
-float Otto::getDistance(){
-
+float Otto::getDistance()
+{
   return us.read();
 }
 
@@ -533,61 +519,61 @@ float Otto::getDistance(){
 //---------------------------------------------------------
 //-- Otto getNoise: return Otto's noise sensor measure
 //---------------------------------------------------------
-int Otto::getNoise(){
-
+int Otto::getNoise()
+{
   int noiseLevel = 0;
   int noiseReadings = 0;
   int numReadings = 2;  
 
-    noiseLevel = analogRead(pinNoiseSensor);
+  noiseLevel = analogRead(pinNoiseSensor);
 
-    for(int i=0; i<numReadings; i++){
-        noiseReadings += analogRead(pinNoiseSensor);
-        delay(4); // delay in between reads for stability
-    }
+  for(int i=0; i<numReadings; i++)
+  {
+    noiseReadings += analogRead(pinNoiseSensor);
+    delay(4); // delay in between reads for stability
+  }
 
-    noiseLevel = noiseReadings / numReadings;
-
-    return noiseLevel;
+  noiseLevel = noiseReadings / numReadings;
+  return noiseLevel;
 }
 
 
 //---------------------------------------------------------
 //-- Otto getBatteryLevel: return battery voltage percent
 //---------------------------------------------------------
-double Otto::getBatteryLevel(){
-
+double Otto::getBatteryLevel()
+{
   //The first read of the batery is often a wrong reading, so we will discard this value. 
-    double batteryLevel = battery.readBatPercent();
-    double batteryReadings = 0;
-    int numReadings = 10;
+  double batteryLevel = battery.readBatPercent();
+  double batteryReadings = 0;
+  int numReadings = 10;
 
-    for(int i=0; i<numReadings; i++){
-        batteryReadings += battery.readBatPercent();
-        delay(1); // delay in between reads for stability
-    }
+  for(int i=0; i<numReadings; i++)
+  {
+    batteryReadings += battery.readBatPercent();
+    delay(1); // delay in between reads for stability
+  }
 
-    batteryLevel = batteryReadings / numReadings;
-
-    return batteryLevel;
+  batteryLevel = batteryReadings / numReadings;
+  return batteryLevel;
 }
 
 
-double Otto::getBatteryVoltage(){
-
+double Otto::getBatteryVoltage()
+{
   //The first read of the batery is often a wrong reading, so we will discard this value. 
-    double batteryLevel = battery.readBatVoltage();
-    double batteryReadings = 0;
-    int numReadings = 10;
+  double batteryLevel = battery.readBatVoltage();
+  double batteryReadings = 0;
+  int numReadings = 10;
 
-    for(int i=0; i<numReadings; i++){
-        batteryReadings += battery.readBatVoltage();
-        delay(1); // delay in between reads for stability
-    }
+  for (int i = 0; i < numReadings; i++)
+  {
+    batteryReadings += battery.readBatVoltage();
+    delay(1); // delay in between reads for stability
+  }
 
-    batteryLevel = batteryReadings / numReadings;
-
-    return batteryLevel;
+  batteryLevel = batteryReadings / numReadings;
+  return batteryLevel;
 }
 
 
@@ -595,7 +581,8 @@ double Otto::getBatteryVoltage(){
 //-- MOUTHS & ANIMATIONS ----------------------------------------//
 ///////////////////////////////////////////////////////////////////
 
-unsigned long int Otto::getMouthShape(int number){
+unsigned long int Otto::getMouthShape(int number)
+{
   unsigned long int types []={zero_code,one_code,two_code,three_code,four_code,five_code,six_code,seven_code,eight_code,
   nine_code,smile_code,happyOpen_code,happyClosed_code,heart_code,bigSurprise_code,smallSurprise_code,tongueOut_code,
   vamp1_code,vamp2_code,lineMouth_code,confused_code,diagonal_code,sad_code,sadOpen_code,sadClosed_code,
@@ -604,9 +591,8 @@ unsigned long int Otto::getMouthShape(int number){
   return types[number];
 }
 
-
-unsigned long int Otto::getAnimShape(int anim, int index){
-
+unsigned long int Otto::getAnimShape(int anim, int index)
+{
   unsigned long int littleUuh_code[]={
      0b00000000000000001100001100000000,
      0b00000000000000000110000110000000,
@@ -647,8 +633,8 @@ unsigned long int Otto::getAnimShape(int anim, int index){
      0b00011000100100000010000001000000    
   };
 
-  switch  (anim){
-
+  switch  (anim)
+  {
     case littleUuh:
         return littleUuh_code[index];
         break;
@@ -664,26 +650,25 @@ unsigned long int Otto::getAnimShape(int anim, int index){
   }   
 }
 
-
-void Otto::putAnimationMouth(unsigned long int aniMouth, int index){
-
-      ledmatrix.writeFull(getAnimShape(aniMouth,index));
+void Otto::putAnimationMouth(unsigned long int aniMouth, int index)
+{
+  ledmatrix.writeFull(getAnimShape(aniMouth,index));
 }
 
-
-void Otto::putMouth(unsigned long int mouth, bool predefined){
-
-  if (predefined){
+void Otto::putMouth(unsigned long int mouth, bool predefined)
+{
+  if (predefined)
+  {
     ledmatrix.writeFull(getMouthShape(mouth));
   }
-  else{
+  else
+  {
     ledmatrix.writeFull(mouth);
   }
 }
 
-
-void Otto::clearMouth(){
-
+void Otto::clearMouth()
+{
   ledmatrix.clearMatrix();
 }
 
@@ -692,42 +677,42 @@ void Otto::clearMouth(){
 //-- SOUNDS -----------------------------------------------------//
 ///////////////////////////////////////////////////////////////////
 
-void Otto::_tone (float noteFrequency, long noteDuration, int silentDuration){
+void Otto::_tone (float noteFrequency, long noteDuration, int silentDuration)
+{
+  // tone(10,261,500);
+  // delay(500);
 
-    // tone(10,261,500);
-    // delay(500);
+  if (silentDuration == 0) { silentDuration = 1; }
 
-      if(silentDuration==0){silentDuration=1;}
-
-      tone(Otto::pinBuzzer, noteFrequency, noteDuration);
-      delay(noteDuration);       //milliseconds to microseconds
-      //noTone(PIN_Buzzer);
-      delay(silentDuration);     
+  tone(Otto::pinBuzzer, noteFrequency, noteDuration);
+  delay(noteDuration);       //milliseconds to microseconds
+  // noTone(PIN_Buzzer);
+  delay(silentDuration);     
 }
 
-
-void Otto::bendTones (float initFrequency, float finalFrequency, float prop, long noteDuration, int silentDuration){
-
+void Otto::bendTones (float initFrequency, float finalFrequency, float prop, long noteDuration, int silentDuration)
+{
   //Examples:
   //  bendTones (880, 2093, 1.02, 18, 1);
   //  bendTones (note_A5, note_C7, 1.02, 18, 0);
 
-  if(silentDuration==0){silentDuration=1;}
+  if (silentDuration == 0) { silentDuration = 1; }
 
-  if(initFrequency < finalFrequency)
+  if (initFrequency < finalFrequency)
   {
-      for (int i=initFrequency; i<finalFrequency; i=i*prop) {
-          _tone(i, noteDuration, silentDuration);
-      }
-
-  } else{
-
-      for (int i=initFrequency; i>finalFrequency; i=i/prop) {
-          _tone(i, noteDuration, silentDuration);
-      }
+    for (int i = initFrequency; i < finalFrequency; i = i*prop)
+    {
+      _tone(i, noteDuration, silentDuration);
+    }
+  }
+  else
+  {
+    for (int i = initFrequency; i > finalFrequency; i = i/prop)
+    {
+      _tone(i, noteDuration, silentDuration);
+    }
   }
 }
-
 
 void Otto::sing(int songName){
   switch(songName){
