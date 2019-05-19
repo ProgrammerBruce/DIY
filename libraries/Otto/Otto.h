@@ -22,8 +22,8 @@
 #define BIG         30
 
 #define PIN_Buzzer  13
-#define PIN_Trigger A0 // @ URF01 on some Sensor Shields
-#define PIN_Echo    A1 // @ URF01 on some Sensor Shields
+#define PIN_Trigger 8
+#define PIN_Echo    9
 #define PIN_NoiseSensor A6
 
 
@@ -32,11 +32,15 @@ class Otto
   public:
 
     //-- Otto initialization
-    void init(int YL, int YR, int RL, int RR, int YL_trim=0, int YR_trim=0, int RL_trim=0, int RR_trim=0, int NoiseSensor=PIN_NoiseSensor, int Buzzer=PIN_Buzzer, int USTrigger=PIN_Trigger, int USEcho=PIN_Echo);
+    void init(int YL, int YR, int RL, int RR, bool load_calibration=true, int NoiseSensor=PIN_NoiseSensor, int Buzzer=PIN_Buzzer, int USTrigger=PIN_Trigger, int USEcho=PIN_Echo);
 
     //-- Attach & detach functions
     void attachServos();
     void detachServos();
+
+    //-- Oscillator Trims
+    void setTrims(int YL, int YR, int RL, int RR);
+    void saveTrimsOnEEPROM();
 
     //-- Predetermined Motion Functions
     void _moveServos(int time, int  servo_target[]);
@@ -110,7 +114,7 @@ class Otto
     unsigned long int getMouthShape(int number);
     unsigned long int getAnimShape(int anim, int index);
     void _execute(int A[4], int O[4], int T, double phase_diff[4], float steps);
-    void setTrims(int YL_trim, int YR_trim, int RL_trim, int RR_trim);
+
 };
 
 #endif
