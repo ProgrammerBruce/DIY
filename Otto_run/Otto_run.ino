@@ -4,10 +4,7 @@
 //-- Otto will run fast straight forward with this code!
 //-----------------------------------------------------------------
 #include <Arduino.h>
-#include <Servo.h>
 
-#include <Oscillator.h>
-#include <US.h>
 #include <Otto.h>
 
 Otto otto;  //This is Otto!
@@ -42,7 +39,8 @@ bool obstacleDetected = false;
 ///////////////////////////////////////////////////////////////////
 //-- Setup ------------------------------------------------------//
 ///////////////////////////////////////////////////////////////////
-void setup() {
+void setup()
+{
   //Set the servo pins
   otto.init(PIN_YL,PIN_YR,PIN_RL,PIN_RR,true);
   otto.sing(S_connection); //Otto wake up!
@@ -54,18 +52,16 @@ void setup() {
 ///////////////////////////////////////////////////////////////////
 //-- Principal Loop ---------------------------------------------//
 ///////////////////////////////////////////////////////////////////
-void loop() {
+void loop()
+{
   otto.walk(2,500,1); //change T for lower value to run faster!
   delay(50);
 }
          
 ///////////////////////////////////////////////////////////////////
 //-- Function to read distance sensor & to actualize obstacleDetected variable
-void obstacleDetector() {
-   int distance = otto.getDistance();
-        if(distance<15){
-          obstacleDetected = true;
-        }else{
-          obstacleDetected = false;
-        }
+void obstacleDetector()
+{
+  int distance = otto.getDistance();
+  obstacleDetected = (distance < 15);
 }
