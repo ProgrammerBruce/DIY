@@ -1,0 +1,33 @@
+# https://help.github.com/en/articles/dealing-with-line-endings
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c text
+*.cpp text
+.gitattributes text
+.gitignore text
+*.h text
+*.ino text
+*.json text
+LICENSE text
+*.md text
+*.pde text
+*.properties text
+README text
+*.txt text
+
+# Denote all files that are truly binary and should not be modified.
+*.bin binary
+*.elf binary
+*.exe binary
+*.gif binary
+*.hex binary
+*.jpg binary
+*.jpeg binary
+*.o binary
+*.png binary
+*.sb2 binary
+*.zip binary
