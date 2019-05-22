@@ -1,33 +1,67 @@
+# https://git-scm.com/docs/gitattributes
 # https://help.github.com/en/articles/dealing-with-line-endings
+# https://github.com/alexkaratarakis/gitattributes
 
-# Set the default behavior, in case people don't have core.autocrlf set.
+# Default behavior, when core.autocrlf not set:
+
 * text=auto
 
-# Explicitly declare text files you want to always be normalized and converted
-# to native line endings on checkout.
+# Text files to normalize -- Convert LF <==> CRLF on checkout/push
+
 *.c text
+*.cc text
 *.cpp text
+*.cs text
+*.csv text
+*.cxx text
+*.c++ text
 .gitattributes text
 .gitignore text
 *.h text
+*.hh text
+*.hpp text
+*.htm text
+*.html text
+*.h++ text
 *.ino text
+*.java text
 *.json text
 LICENSE text
+*.markdown text
 *.md text
+*.ME text
 *.pde text
 *.properties text
+*.py text
 README text
+*.svg text
 *.txt text
 
-# Denote all files that are truly binary and should not be modified.
+# Binary files to not be modified
+
+*.7z binary
+*.a binary
 *.bin binary
+*.dll binary
+*.doc binary
+*.docx binary
 *.elf binary
+*.eps binary
 *.exe binary
 *.gif binary
+*.gz binary
 *.hex binary
+*.ico binary
+*.jar binary
 *.jpg binary
 *.jpeg binary
 *.o binary
+*.out binary
+*.pdf binary
 *.png binary
+*.rar binary
 *.sb2 binary
+*.tar binary
+*.tif binary
+*.tiff binary
 *.zip binary
