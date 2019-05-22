@@ -12,6 +12,7 @@
 *.cc text
 *.cpp text
 *.cs text
+*.css text
 *.csv text
 *.cxx text
 *.c++ text
@@ -35,6 +36,7 @@ LICENSE text
 *.py text
 README text
 *.svg text
+*.ts text
 *.txt text
 
 # Binary files to not be modified
