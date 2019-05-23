@@ -10,7 +10,7 @@
 Otto otto;  //This is Otto!
 
 //---------------------------------------------------------
-//-- First step: Make sure the pins for servos are in the right position
+//-- Make sure the pins for servos are in the right position
 /*
          --------------- 
         |     O   O     |
@@ -21,20 +21,29 @@ YR 3==> |               | <== YL 2
 RR 5==>   -----   ------  <== RL 4
          |-----   ------|
 */
-#define PIN_YL 2 //servo[2]
-#define PIN_YR 3 //servo[3]
-#define PIN_RL 4 //servo[4]
-#define PIN_RR 5 //servo[5]
+#define PIN_YL 7 //servo[0] -- left hip
+#define PIN_YR 8 //servo[1] -- right hip
+#define PIN_RL 9 //servo[2] -- left foot
+#define PIN_RR 10 //servo[3] -- right foot
+
+#define YL_TRIM 8
+#define YR_TRIM -5
+#define RL_TRIM -10
+#define RR_TRIM 0
+
+#define SERVO_POS_MIN 0
+#define SERVO_POS_MAX 180
+
+#define US_TRIGGER_PIN  A0
+#define US_ECHO_PIN     A1
 
 ///////////////////////////////////////////////////////////////////
 //-- Global Variables -------------------------------------------//
 ///////////////////////////////////////////////////////////////////
 //-- Movement parameters
-int T=1000;              //Initial duration of movement
-int moveId=0;            //Number of movement
-int moveSize=15;         //Asociated with the height of some movements
-//---------------------------------------------------------
-bool obstacleDetected = false;
+#define STEPS 2
+#define T 1000 //Initial duration of movement. Lower value to run faster.
+#define MOVEMENT_ID FORWARD
 
 ///////////////////////////////////////////////////////////////////
 //-- Setup ------------------------------------------------------//
@@ -42,11 +51,14 @@ bool obstacleDetected = false;
 void setup()
 {
   //Set the servo pins
-  otto.init(PIN_YL,PIN_YR,PIN_RL,PIN_RR,true);
-  otto.sing(S_connection); //Otto wake up!
+  bool load_calibration = false;
+  otto.init(PIN_YL, PIN_YR, PIN_RL, PIN_RR, load_calibration, PIN_NoiseSensor, PIN_Buzzer, US_TRIGGER_PIN, US_ECHO_PIN);
+  otto.setTrims(YL_TRIM, YR_TRIM, RL_TRIM, RR_TRIM);
+  otto.setPositionLimits(SERVO_POS_MIN, SERVO_POS_MAX);
+  // otto.sing(S_connection); //Otto wake up!
   otto.home();
-  delay(50);
-  otto.sing(S_happy); // a happy Otto :)
+  delay(5000);
+  // otto.sing(S_happy); // a happy Otto :)
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -54,14 +66,6 @@ void setup()
 ///////////////////////////////////////////////////////////////////
 void loop()
 {
-  otto.walk(2,500,1); //change T for lower value to run faster!
+  otto.walk(STEPS, T, MOVEMENT_ID); // steps, T, dir
   delay(50);
-}
-         
-///////////////////////////////////////////////////////////////////
-//-- Function to read distance sensor & to actualize obstacleDetected variable
-void obstacleDetector()
-{
-  int distance = otto.getDistance();
-  obstacleDetected = (distance < 15);
 }

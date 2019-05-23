@@ -15,17 +15,16 @@
 //-- the last sample was taken
 bool Oscillator::next_sample()
 {
-  
   //-- Read current time
   _currentMillis = millis();
- 
-  //-- Check if the timeout has passed
-  if(_currentMillis - _previousMillis > _TS) {
-    _previousMillis = _currentMillis;   
 
+  //-- Check if the timeout has passed
+  if(_currentMillis - _previousMillis > _TS)
+  {
+    _previousMillis = _currentMillis;   
     return true;
   }
-  
+
   return false;
 }
 
@@ -35,40 +34,37 @@ bool Oscillator::next_sample()
 void Oscillator::attach(int pin, bool rev)
 {
   //-- If the oscillator is detached, attach it.
-  if(!_servo.attached()){
-
+  if(!_servo.attached())
+  {
     //-- Attach the servo and move it to the home position
-      _servo.attach(pin);
-      _servo.write(90);
+    _servo.attach(pin);
+    SetPosition(90);
 
-      //-- Initialization of oscilaltor parameters
-      _TS=30;
-      _T=2000;
-      _N = _T/_TS;
-      _inc = 2*M_PI/_N;
+    //-- Initialization of oscilaltor parameters
+    _TS=30;
+    _T=2000;
+    _N = _T/_TS;
+    _inc = 2*M_PI/_N;
 
-      _previousMillis=0;
+    _previousMillis=0;
 
-      //-- Default parameters
-      _A=45;
-      _phase=0;
-      _phase0=0;
-      _O=0;
-      _stop=false;
+    //-- Default parameters
+    _A=45;
+    _phase=0;
+    _phase0=0;
+    _O=0;
+    _stop=false;
 
-      //-- Reverse mode
-      _rev = rev;
+    //-- Reverse mode
+    _rev = rev;
   }
-      
 }
 
 //-- Detach an oscillator from his servo
 void Oscillator::detach()
 {
-   //-- If the oscillator is attached, detach it.
   if(_servo.attached())
-        _servo.detach();
-
+    _servo.detach();
 }
 
 /*************************************/
@@ -82,17 +78,16 @@ void Oscillator::SetT(unsigned int T)
   //-- Recalculate the parameters
   _N = _T/_TS;
   _inc = 2*M_PI/_N;
-};
+}
 
 /*******************************/
 /* Manual set of the position  */
 /******************************/
-
 void Oscillator::SetPosition(int position)
 {
-  _servo.write(position+_trim);
-};
-
+  // @TODO Why not: _pos = constrain(position+_trim, _posMin, _posMax)
+  _servo.write(constrain(position+_trim, _posMin, _posMax));
+}
 
 /*******************************************************************/
 /* This function should be periodically called                     */
@@ -101,22 +96,21 @@ void Oscillator::SetPosition(int position)
 /*******************************************************************/
 void Oscillator::refresh()
 {
-  
   //-- Only When TS milliseconds have passed, the new sample is obtained
-  if (next_sample()) {
-  
-      //-- If the oscillator is not stopped, calculate the servo position
-      if (!_stop) {
-        //-- Sample the sine function and set the servo pos
-         _pos = round(_A * sin(_phase + _phase0) + _O);
-	       if (_rev) _pos=-_pos;
-         _servo.write(_pos+90+_trim);
-      }
+  if (next_sample())
+  {
+    //-- If the oscillator is not stopped, calculate the servo position
+    if (!_stop)
+    {
+      //-- Sample the sine function and set the servo pos
+      int pos = round(_A * sin(_phase + _phase0) + _O);
+	    if (_rev) pos=-pos;
+      _servo.write(constrain(pos+90+_trim, _posMin, _posMax));
+    }
 
-      //-- Increment the phase
-      //-- It is always increased, even when the oscillator is stop
-      //-- so that the coordination is always kept
-      _phase = _phase + _inc;
-
+    //-- Increment the phase
+    //-- It is always increased, even when the oscillator is stop
+    //-- so that the coordination is always kept
+    _phase = _phase + _inc;
   }
 }

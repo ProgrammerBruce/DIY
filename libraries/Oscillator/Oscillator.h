@@ -18,7 +18,7 @@
 class Oscillator
 {
   public:
-    Oscillator(int trim=0) {_trim=trim;};
+    Oscillator(int trim=0, int posMin=0, int posMax=180) {_trim=trim; _posMin=posMin; _posMax=posMax;};
     void attach(int pin, bool rev =false);
     void detach();
     
@@ -27,6 +27,9 @@ class Oscillator
     void SetPh(double Ph) {_phase0=Ph;};
     void SetT(unsigned int T);
     void SetTrim(int trim){_trim=trim;};
+    // void setPosMin(int posMin){_posMin = posMin;};
+    // void setPosMax(int posMax){_posMax = posMax;};
+    void setPositionLimits(int posMin, int posMax) {_posMin = posMin; _posMax = posMax;};
     int getTrim() {return _trim;};
     void SetPosition(int position); 
     void Stop() {_stop=true;};
@@ -48,8 +51,10 @@ class Oscillator
     double _phase0;   //-- Phase (radians)
     
     //-- Internal variables
-    int _pos;         //-- Current servo pos
+    // int _pos;         //-- Current servo pos -- not used
     int _trim;        //-- Calibration offset
+    int _posMin;
+    int _posMax;
     double _phase;    //-- Current phase
     double _inc;      //-- Increment of phase
     double _N;        //-- Number of samples

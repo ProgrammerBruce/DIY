@@ -40,6 +40,7 @@ class Otto
 
     //-- Oscillator Trims
     void setTrims(int YL, int YR, int RL, int RR);
+    void setPositionLimits(int minPos, int maxPos);
     void saveTrimsOnEEPROM();
 
     //-- Predetermined Motion Functions
@@ -99,8 +100,8 @@ class Otto
     US us;
 
     int servo_pins[4];
-    int servo_trim[4];
-    int servo_position[4];
+    // int servo_trim[4];
+    int servo_position[4]; // @TODO Why not use Oscillator::_pos ?
 
     int pinBuzzer;
     int pinNoiseSensor;

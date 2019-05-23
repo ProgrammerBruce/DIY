@@ -64,6 +64,13 @@ void Otto::setTrims(int YL, int YR, int RL, int RR) {
   servo[3].SetTrim(RR);
 }
 
+void Otto::setPositionLimits(int minPos, int maxPos) {
+  servo[0].setPositionLimits(minPos, maxPos);
+  servo[1].setPositionLimits(minPos, maxPos);
+  servo[2].setPositionLimits(minPos, maxPos);
+  servo[3].setPositionLimits(minPos, maxPos);
+}
+
 void Otto::saveTrimsOnEEPROM() {
   
   for (int i = 0; i < 4; i++){ 
@@ -82,6 +89,8 @@ void Otto::_moveServos(int time, int  servo_target[]) {
   if(getRestState()==true){
         setRestState(false);
   }
+
+  // @TODO Why track servo_position[] and not use Oscilator::_pos ?
 
   if(time>10){
     for (int i = 0; i < 4; i++) increment[i] = ((servo_target[i]) - servo_position[i]) / (time / 10.0);
